@@ -3,7 +3,7 @@
 #include <buildTime.h>
 
 
-#define DEBUG 1
+#define DEBUG
 #define ERROR_WAIT_TIME 5000
 
 #ifdef DEBUG 1
