@@ -3,10 +3,10 @@
 #include <buildTime.h>
 
 
-#define DEBUG
+#define DEBUG 1
 #define ERROR_WAIT_TIME 5000
 
-#ifdef DEBUG 1
+#ifdef DEBUG
   #define log(x) Serial.println(x)
 #else
   #define log(x)
