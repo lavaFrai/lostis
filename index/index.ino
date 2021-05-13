@@ -11,6 +11,10 @@
 #define ERROR_WAIT_TIME 5000
 #define DOWN_BUTTON_PIN 2
 #define UP_BUTTON_PIN 3
+#define LEFT_BUTTON_PIN 4
+#define RIGHT_BUTTON_PIN 5
+#define OK_BUTTON_PIN 6
+#define BACK_BUTTON_PIN 7
 
 #ifdef DEBUG
   #define log(x) Serial.println(x)
@@ -48,6 +52,10 @@ menu_item menu[] =
 GyverOLED OLED;
 GButton down_button(DOWN_BUTTON_PIN);
 GButton up_button(UP_BUTTON_PIN);
+GButton left_button(LEFT_BUTTON_PIN);
+GButton right_button(RIGHT_BUTTON_PIN);
+GButton ok_button(OK_BUTTON_PIN);
+GButton back_button(BACK_BUTTON_PIN);
 
 void setup()
 {
@@ -60,7 +68,8 @@ void setup()
   Timer2.setFrequency(62);
   Timer2.enableISR(CHANNEL_A);
   Timer2.restart();
-  pinMode(2, INPUT_PULLUP);
+  pinMode(DOWN_BUTTON_PIN, INPUT_PULLUP);
+  pinMode(UP_BUTTON_PIN, INPUT_PULLUP);
   while (millis() < 2000) delay(10);
 }
 
@@ -75,6 +84,10 @@ ISR(TIMER2_A)
 {
   down_button.tick();
   up_button.tick();
+  left_button.tick();
+  right_button.tick();
+  ok_button.tick();
+  back_button.tick();
   // if (up_button.isSingle()) log("btnUp");
   // if (down_button.isSingle()) log("btnDown");
 }
