@@ -1,4 +1,4 @@
-# lostis (lostis_multitul | lostis_flat_computer)
+# lostis (lostis_multitul)
 Проект мультитула для DIY-вайщиков, электронщиков, радиолюбителей и интересующихся людей 
 
 
