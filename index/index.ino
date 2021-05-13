@@ -105,7 +105,7 @@ byte render_menu(menu_item *list, String header, byte menu_len)
     OLED.setCursor((20 - header.length())/2, 0);
     OLED.print(header);
     OLED.line(0, 10, 128, 10);
-    while (f < k + 2) f++;
+    while (f + 2 < k) f++;
     while (f > k) f--;
     log(f);
     for (int i = 0; i < 3; i++) {
