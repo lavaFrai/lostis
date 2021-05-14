@@ -9,7 +9,7 @@
 #define forever while(1)
 #define DEBUG 1
 #define ERROR_WAIT_TIME 5000
-#define DOWN_BUTTON_PIN 8
+#define DOWN_BUTTON_PIN 10
 #define UP_BUTTON_PIN 9
 #define LEFT_BUTTON_PIN 4
 #define RIGHT_BUTTON_PIN 5
