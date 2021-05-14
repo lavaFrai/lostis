@@ -144,6 +144,12 @@ byte render_menu(menu_item *list, String header, byte menu_len)
         else k++;
         break;
       }
+      if (ok_button.isSingle()) {
+        log("OK");
+        OLED.clear();
+        list[k].function();
+        return 0;
+      }
     }
   }
   return 0;
@@ -190,7 +196,11 @@ byte ext_module() {
 
 byte show_info() 
 {
-  
+  forever {
+    if (up_button.isSingle()) return 0;
+    if (down_button.isSingle()) return 0;
+    if (ok_button.isSingle()) return 0;
+  }
   return 0;
 }
 
