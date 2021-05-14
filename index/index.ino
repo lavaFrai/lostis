@@ -45,8 +45,6 @@ menu_item menu[] =
   {SETTINGS_T, settings},
   {ABOUT_T, show_info},
   {SHUTDOWN_T, power_off},
-  {"point1", show_info},
-  {"point2", show_info}
 };
 
 GyverOLED OLED;
@@ -157,7 +155,7 @@ byte render_menu(menu_item *list, String header, byte menu_len)
 
 byte tick()
 {
-  
+  Watchdog.reset();
   return 0;
 }
 
@@ -196,10 +194,21 @@ byte ext_module() {
 
 byte show_info() 
 {
+  OLED.inverse(0);
+  OLED.clear();
+  OLED.home();
+  OLED.setCursor(4, 1);
+
+  OLED.scale2X();
+  OLED.print("LOSTIS");
+  OLED.scale1X();
+  OLED.setCursor(4, 3);
+  OLED.print("the  project");
   forever {
     if (up_button.isSingle()) return 0;
     if (down_button.isSingle()) return 0;
     if (ok_button.isSingle()) return 0;
+    tick();
   }
   return 0;
 }
@@ -213,7 +222,7 @@ byte settings()
 byte power_off() 
 {
   Serial.end();
-  
+  Watchdog.disable();
   power.sleep(SLEEP_FOREVER);
   return 0;
 }
