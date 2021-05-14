@@ -204,6 +204,10 @@ byte show_info()
   OLED.scale1X();
   OLED.setCursor(4, 3);
   OLED.print("the  project");
+  OLED.setCursor(0, 6);
+  OLED.print("See more on this:");
+  OLED.setCursor(0, 7);
+  OLED.print("http://clck.ru/UpLZT");
   forever {
     if (up_button.isSingle()) return 0;
     if (down_button.isSingle()) return 0;
