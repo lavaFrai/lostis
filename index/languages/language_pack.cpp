@@ -12,4 +12,6 @@
 #define SETTINGS_T ("Settings")
 #define EXTERNAL_MODULE ("External module")
 
+#define ADC_VIEWER ("ADC viewer")
+
 #endif
