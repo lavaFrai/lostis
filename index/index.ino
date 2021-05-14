@@ -94,9 +94,9 @@ ISR(TIMER2_A)
 
 byte render_menu(menu_item *list, String header, byte menu_len) 
 {
+  OLED.clear();
   uint8_t k = 0, f = 0, l = menu_len;
   forever {
-    OLED.clear();
     OLED.home();
     OLED.scale1X();
     OLED.inverse(0);
@@ -107,7 +107,6 @@ byte render_menu(menu_item *list, String header, byte menu_len)
     OLED.line(0, 10, 128, 10);
     while (f + 2 < k) f++;
     while (f > k) f--;
-    log(f);
     for (int i = 0; i < 3; i++) {
       if (k == i + f) {
         OLED.inverse(1);
