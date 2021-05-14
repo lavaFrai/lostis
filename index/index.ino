@@ -15,6 +15,13 @@
 #define RIGHT_BUTTON_PIN 5
 #define OK_BUTTON_PIN 6
 #define BACK_BUTTON_PIN 7
+#define Q_RETURN if (up_button.isSingle()) return 0; \
+                 if (down_button.isSingle()) return 0; \
+                 if (ok_button.isSingle()) return 0; \
+                 if (left_button.isSingle()) return 0; \
+                 if (right_button.isSingle()) return 0
+
+#define FOR_i(from, to) for(int i = (from); i < (to); i++)
 
 #ifdef DEBUG
   #define log(x) Serial.println(x)
@@ -31,6 +38,8 @@ byte settings();
 byte show_loading();
 byte show_error(String process_id, byte error_code);
 
+byte adc_vue();
+
 
 struct menu_item 
 {
@@ -41,9 +50,10 @@ struct menu_item
 
 menu_item menu[] = 
 {
-  {EXTERNAL_MODULE, ext_module},
+  {ADC_VIEWER, adc_vue},
   {SETTINGS_T, settings},
   {ABOUT_T, show_info},
+  {EXTERNAL_MODULE, ext_module},
   {SHUTDOWN_T, power_off},
 };
 
@@ -63,7 +73,7 @@ void setup()
   #ifdef DEBUG
     Serial.begin(9600);
   #endif
-  Timer2.setFrequency(62);
+  Timer2.setFrequency(162);
   Timer2.enableISR(CHANNEL_A);
   Timer2.restart();
   pinMode(DOWN_BUTTON_PIN, INPUT_PULLUP);
@@ -161,7 +171,9 @@ byte render_menu(menu_item *list, String header, byte menu_len)
         right_button.resetStates();
         up_button.resetStates();
         down_button.resetStates();
-        return 0;
+        OLED.clear();
+        break;
+        // return 0;
       }
     }
   }
@@ -202,7 +214,8 @@ byte show_error(String process_id, byte error_code)
   power_off();
 }
 
-byte ext_module() {
+byte ext_module() 
+{
 
   return 0;
 }
@@ -224,14 +237,40 @@ byte show_info()
   OLED.setCursor(0, 7);
   OLED.print("http://clck.ru/UpLZT");
   forever {
-    if (up_button.isSingle()) return 0;
-    if (down_button.isSingle()) return 0;
-    if (ok_button.isSingle()) return 0;
-    if (left_button.isSingle()) return 0;
-    if (right_button.isSingle()) return 0;
+    Q_RETURN;
     tick();
   }
   return 0;
+}
+
+byte draw_value(String header, String title, int val, int from_val, int to_val) {
+  // OLED.clear();
+  val = constrain(val, from_val, to_val);
+  OLED.scale1X();
+  OLED.inverse(0);
+  OLED.setCursor((20 - header.length())/2, 0);
+  OLED.print(header);
+  OLED.line(0, 10, 128, 10);
+  OLED.scale2X();
+  title += String(val);
+  OLED.setCursor(0, 4);
+  OLED.print(title);
+  OLED.print("    ");
+  // OLED.setCursor(0, 7);
+  // OLED.scale1X();
+  // OLED.print("                     ");
+  // val = map(val, from_val, to_val, 0, 120);
+  // log(val);
+  // OLED.line(0, 63, val, 63);
+}
+
+byte adc_vue() {
+  OLED.clear();
+  forever {
+    Q_RETURN;
+    draw_value("ADC data", "ADC: ", analogRead(A2), 0, 1024);
+    tick();
+  }
 }
 
 byte settings() 
