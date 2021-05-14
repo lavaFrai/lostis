@@ -92,6 +92,11 @@ ISR(TIMER2_A)
 
 byte render_menu(menu_item *list, String header, byte menu_len) 
 {
+  ok_button.resetStates();
+  left_button.resetStates();
+  right_button.resetStates();
+  up_button.resetStates();
+  down_button.resetStates();
   OLED.clear();
   uint8_t k = 0, f = 0, l = menu_len;
   forever {
@@ -130,22 +135,32 @@ byte render_menu(menu_item *list, String header, byte menu_len)
     forever
     {
       Watchdog.reset();
-      if (up_button.isSingle()) {
+      if (up_button.isPress() || up_button.isHold()) {
         log("UP");
         if (k == 0) k = l - 1;
         else k--;
         break;
       }
-      if (down_button.isSingle()) {
+      if (down_button.isPress() || down_button.isHold()) {
         log("DOWN");
         if (k == l - 1) k = 0;
         else k++;
         break;
       }
       if (ok_button.isSingle()) {
+        ok_button.resetStates();
+        left_button.resetStates();
+        right_button.resetStates();
+        up_button.resetStates();
+        down_button.resetStates();
         log("OK");
         OLED.clear();
         list[k].function();
+        ok_button.resetStates();
+        left_button.resetStates();
+        right_button.resetStates();
+        up_button.resetStates();
+        down_button.resetStates();
         return 0;
       }
     }
@@ -212,6 +227,8 @@ byte show_info()
     if (up_button.isSingle()) return 0;
     if (down_button.isSingle()) return 0;
     if (ok_button.isSingle()) return 0;
+    if (left_button.isSingle()) return 0;
+    if (right_button.isSingle()) return 0;
     tick();
   }
   return 0;
