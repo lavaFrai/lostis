@@ -39,6 +39,7 @@ byte show_loading();
 byte show_error(String process_id, byte error_code);
 
 byte adc_vue();
+byte voltmeter();
 
 
 struct menu_item 
@@ -50,7 +51,8 @@ struct menu_item
 
 menu_item menu[] = 
 {
-  {ADC_VIEWER, adc_vue},
+  {VOLTMETER_T, voltmeter},
+  {ADC_VIEWER_T, adc_vue},
   {SETTINGS_T, settings},
   {ABOUT_T, show_info},
   {EXTERNAL_MODULE, ext_module},
@@ -228,14 +230,14 @@ byte show_info()
   OLED.setCursor(4, 1);
 
   OLED.scale2X();
-  OLED.print("LOSTIS");
+  OLED.print(F("LOSTIS"));
   OLED.scale1X();
   OLED.setCursor(4, 3);
-  OLED.print("the  project");
+  OLED.print(F("the  project"));
   OLED.setCursor(0, 6);
-  OLED.print("See more on this:");
+  OLED.print(F("See more on this:"));
   OLED.setCursor(0, 7);
-  OLED.print("http://clck.ru/UpLZT");
+  OLED.print(F("http://clck.ru/UpLZT"));
   forever {
     Q_RETURN;
     tick();
@@ -264,11 +266,39 @@ byte draw_value(String header, String title, int val, int from_val, int to_val) 
   // OLED.line(0, 63, val, 63);
 }
 
+byte draw_float_value(String header, String title, float val) {
+  OLED.scale1X();
+  OLED.inverse(0);
+  OLED.setCursor((20 - header.length())/2, 0);
+  OLED.print(header);
+  OLED.line(0, 10, 128, 10);
+  OLED.scale2X();
+  title += String(val);
+  OLED.setCursor(0, 4);
+  OLED.print(title);
+  OLED.print("    ");
+  // OLED.setCursor(0, 7);
+  // OLED.scale1X();
+  // OLED.print("                     ");
+  // val = map(val, from_val, to_val, 0, 120);
+  // log(val);
+  // OLED.line(0, 63, val, 63);
+}
+
 byte adc_vue() {
   OLED.clear();
   forever {
     Q_RETURN;
-    draw_value("ADC data", "ADC: ", analogRead(A2), 0, 1024);
+    draw_value(F("ADC data"), F("ADC: "), analogRead(A2), 0, 1024);
+    tick();
+  }
+}
+
+byte voltmeter() {
+  OLED.clear();
+  forever {
+    Q_RETURN;
+    draw_float_value(F("Voltage"), F("V: "), (float)analogRead(A2) / 204.8);
     tick();
   }
 }
