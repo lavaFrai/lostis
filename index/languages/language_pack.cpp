@@ -12,6 +12,7 @@
 #define SETTINGS_T ("Settings")
 #define EXTERNAL_MODULE ("External module")
 
-#define ADC_VIEWER ("ADC viewer")
+#define ADC_VIEWER_T ("ADC viewer")
+#define VOLTMETER_T ("Voltmeter")
 
 #endif
