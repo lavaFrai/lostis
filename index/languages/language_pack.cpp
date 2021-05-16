@@ -14,5 +14,6 @@
 
 #define ADC_VIEWER_T ("ADC viewer")
 #define VOLTMETER_T ("Voltmeter")
+#define RESISTANCE_T ("Resist. meter")
 
 #endif
