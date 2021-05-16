@@ -4,6 +4,7 @@
 #include <buildTime.h>
 #include <GyverTimers.h>
 #include <GyverOLED.h>
+#include <GyverFilters.h>
 #include "languages/language_pack.cpp"
 
 #define forever while(1)
@@ -15,6 +16,15 @@
 #define RIGHT_BUTTON_PIN 5
 #define OK_BUTTON_PIN 6
 #define BACK_BUTTON_PIN 7
+byte ADC_PIN = A2;
+byte VOLTMETER_PIN = A2;
+byte RESISTANCE_PIN = A2;
+#define V_DIV_R1 17.7
+#define V_DIV_R2 2.54
+#define V_ADC_SHIFT 0.1
+#define V_ADC_SHIFT2 1.005
+
+
 #define Q_RETURN if (up_button.isSingle()) return 0; \
                  if (down_button.isSingle()) return 0; \
                  if (ok_button.isSingle()) return 0; \
@@ -40,7 +50,7 @@ byte show_error(String process_id, byte error_code);
 
 byte adc_vue();
 byte voltmeter();
-
+byte resistance();
 
 struct menu_item 
 {
@@ -48,10 +58,10 @@ struct menu_item
   byte (*function)();
 };
 
-
 menu_item menu[] = 
 {
   {VOLTMETER_T, voltmeter},
+  {RESISTANCE_T, resistance},
   {ADC_VIEWER_T, adc_vue},
   {SETTINGS_T, settings},
   {ABOUT_T, show_info},
@@ -66,6 +76,9 @@ GButton left_button(LEFT_BUTTON_PIN);
 GButton right_button(RIGHT_BUTTON_PIN);
 GButton ok_button(OK_BUTTON_PIN);
 GButton back_button(BACK_BUTTON_PIN);
+GMedian<10, int> voltageFilter;
+
+float V_DIV = (V_DIV_R2 / (V_DIV_R1 + V_DIV_R2));
 
 void setup()
 {
@@ -148,13 +161,11 @@ byte render_menu(menu_item *list, String header, byte menu_len)
     {
       Watchdog.reset();
       if (up_button.isPress() || up_button.isHold()) {
-        log("UP");
         if (k == 0) k = l - 1;
         else k--;
         break;
       }
       if (down_button.isPress() || down_button.isHold()) {
-        log("DOWN");
         if (k == l - 1) k = 0;
         else k++;
         break;
@@ -165,7 +176,6 @@ byte render_menu(menu_item *list, String header, byte menu_len)
         right_button.resetStates();
         up_button.resetStates();
         down_button.resetStates();
-        log("OK");
         OLED.clear();
         list[k].function();
         ok_button.resetStates();
@@ -245,7 +255,8 @@ byte show_info()
   return 0;
 }
 
-byte draw_value(String header, String title, int val, int from_val, int to_val) {
+byte draw_value(String header, String title, int val, int from_val, int to_val) 
+{
   // OLED.clear();
   val = constrain(val, from_val, to_val);
   OLED.scale1X();
@@ -266,7 +277,8 @@ byte draw_value(String header, String title, int val, int from_val, int to_val) 
   // OLED.line(0, 63, val, 63);
 }
 
-byte draw_float_value(String header, String title, float val) {
+byte draw_value(String header, String title, float val) 
+{
   OLED.scale1X();
   OLED.inverse(0);
   OLED.setCursor((20 - header.length())/2, 0);
@@ -285,20 +297,46 @@ byte draw_float_value(String header, String title, float val) {
   // OLED.line(0, 63, val, 63);
 }
 
-byte adc_vue() {
+byte adc_vue() 
+{
   OLED.clear();
+  byte adc_port = ADC_PIN;
+  pinMode(ADC_PIN, INPUT);
   forever {
-    Q_RETURN;
-    draw_value(F("ADC data"), F("ADC: "), analogRead(A2), 0, 1024);
+    if (up_button.isSingle()) return 0;
+    if (down_button.isSingle()) return 0;
+    if (ok_button.isSingle()) return 0;
+    
+    if (left_button.isPress()) adc_port--; 
+    if (right_button.isPress()) adc_port++;
+
+    if (adc_port == 22) adc_port = 14;
+    if (adc_port == 13) adc_port = 21;
+    if (adc_port == 18) adc_port = 20;
+    if (adc_port == 19) adc_port = 17;
+    draw_value(F("ADC data"), "ADC" + String(adc_port - 14) + ": ", analogRead(adc_port), 0, 1024);
     tick();
   }
 }
 
-byte voltmeter() {
+byte voltmeter() 
+{
   OLED.clear();
+  pinMode(VOLTMETER_PIN, INPUT);
   forever {
     Q_RETURN;
-    draw_float_value(F("Voltage"), F("V: "), (float)analogRead(A2) / 204.8);
+    draw_value(F("Voltage"), F("V: "), ((float)voltageFilter.filtered(analogRead(VOLTMETER_PIN)) / 204.8) / V_DIV != 0?(((float)voltageFilter.filtered(analogRead(A2)) / 204.8) / V_DIV + V_ADC_SHIFT)*V_ADC_SHIFT2:0);
+    tick();
+  }
+}
+
+byte resistance() 
+{
+  OLED.clear();
+  pinMode(RESISTANCE_PIN, INPUT_PULLUP);
+  forever {
+    Q_RETURN;
+    draw_value(F("Resistance"), F("Om: "), 1);
     tick();
   }
 }
