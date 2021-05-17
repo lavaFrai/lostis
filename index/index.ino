@@ -16,9 +16,12 @@
 #define RIGHT_BUTTON_PIN 5
 #define OK_BUTTON_PIN 6
 #define BACK_BUTTON_PIN 7
+#define PEZO_PIN 7
 byte ADC_PIN = A2;
 byte VOLTMETER_PIN = A2;
 byte RESISTANCE_PIN = A2;
+byte TESTER_PIN1 = A3;
+byte TESTER_PIN2 = A1;
 #define V_DIV_R1 17.7
 #define V_DIV_R2 2.54
 #define V_ADC_SHIFT 0.1
@@ -90,9 +93,9 @@ void setup()
   #ifdef DEBUG
     Serial.begin(9600);
   #endif
-  Timer2.setFrequency(162);
-  Timer2.enableISR(CHANNEL_A);
-  Timer2.restart();
+  Timer1.setFrequency(162);
+  Timer1.enableISR(CHANNEL_A);
+  Timer1.restart();
   pinMode(DOWN_BUTTON_PIN, INPUT_PULLUP);
   pinMode(UP_BUTTON_PIN, INPUT_PULLUP);
   while (millis() < 2000) delay(10);
@@ -105,7 +108,7 @@ void loop()
   
 }
 
-ISR(TIMER2_A) 
+ISR(TIMER1_A) 
 {
   down_button.tick();
   up_button.tick();
@@ -299,6 +302,20 @@ byte draw_value(String header, String title, float val)
   // OLED.line(0, 63, val, 63);
 }
 
+byte draw_value_center(String header, String text) 
+{
+  OLED.scale1X();
+  OLED.inverse(0);
+  OLED.setCursor((20 - header.length())/2, 0);
+  OLED.print(header);
+  OLED.line(0, 10, 128, 10);
+  OLED.setCursor(0, 4);
+  FOR_i(0, (20 - text.length()) / 2) OLED.print(" ");
+  OLED.print(text);
+  FOR_i(0, 20 - text.length() - ((20 - text.length()) / 2)) OLED.print(" ");
+}
+
+
 byte adc_vue() 
 {
   OLED.clear();
@@ -354,8 +371,12 @@ byte tester()
     digitalWrite(TESTER_PIN1, !digitalRead(TESTER_PIN1));
     if (digitalRead(TESTER_PIN1) == digitalRead(TESTER_PIN2)) k++;
     else k = 0;
-    if (k) log(1);
-    else log(0);
+    if (k > 5) {
+      tone(PEZO_PIN, 1500, 10);
+      draw_value_center(F("Wire testing"), F("Connected!"));
+    }
+    else 
+      draw_value_center(F("Wire testing"), F("No connected"));
     tick();
   }
 }
