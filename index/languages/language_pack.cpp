@@ -15,7 +15,7 @@
 #define ADC_VIEWER_T ("ADC viewer")
 #define VOLTMETER_T ("Voltmeter")
 #define RESISTANCE_T ("Resist. meter")
-#define TESTER_T ("Wire tester")
+#define TESTER_T ("Continuity tester")
 
 
 #endif
