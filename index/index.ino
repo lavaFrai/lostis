@@ -51,6 +51,7 @@ byte show_error(String process_id, byte error_code);
 byte adc_vue();
 byte voltmeter();
 byte resistance();
+byte tester();
 
 struct menu_item 
 {
@@ -61,6 +62,7 @@ struct menu_item
 menu_item menu[] = 
 {
   {VOLTMETER_T, voltmeter},
+  {TESTER_T, tester},
   {RESISTANCE_T, resistance},
   {ADC_VIEWER_T, adc_vue},
   {SETTINGS_T, settings},
@@ -337,6 +339,19 @@ byte resistance()
   forever {
     Q_RETURN;
     draw_value(F("Resistance"), F("Om: "), 1);
+    tick();
+  }
+}
+
+byte tester() 
+{
+  OLED.clear();
+  byte k;
+  pinMode(TESTER_PIN1, OUTPUT);
+  pinMode(TESTER_PIN2, INPUT);
+  forever {
+    Q_RETURN;
+    
     tick();
   }
 }
