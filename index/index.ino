@@ -373,10 +373,10 @@ byte tester()
     else k = 0;
     if (k > 5) {
       tone(PEZO_PIN, 1500, 10);
-      draw_value_center(F("Wire testing"), F("Connected!"));
+      draw_value_center(F("Continuity testing"), F("Connected!"));
     }
     else 
-      draw_value_center(F("Wire testing"), F("No connected"));
+      draw_value_center(F("Continuity testing"), F("No connected"));
     tick();
   }
 }
