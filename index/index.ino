@@ -351,7 +351,11 @@ byte tester()
   pinMode(TESTER_PIN2, INPUT);
   forever {
     Q_RETURN;
-    
+    digitalWrite(TESTER_PIN1, !digitalRead(TESTER_PIN1));
+    if (digitalRead(TESTER_PIN1) == digitalRead(TESTER_PIN2)) k++;
+    else k = 0;
+    if (k) log(1);
+    else log(0);
     tick();
   }
 }
