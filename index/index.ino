@@ -15,7 +15,7 @@
 #define LEFT_BUTTON_PIN 4
 #define RIGHT_BUTTON_PIN 5
 #define OK_BUTTON_PIN 6
-#define BACK_BUTTON_PIN 7
+#define BACK_BUTTON_PIN 8
 #define PEZO_PIN 7
 byte ADC_PIN = A2;
 byte VOLTMETER_PIN = A2;
