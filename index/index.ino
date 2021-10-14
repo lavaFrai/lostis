@@ -8,7 +8,7 @@ namespace defines{
   #define forever while(1)
   #define DEBUG 1
   #define ERROR_WAIT_TIME 5000
-  #define DOWN_BUTTON_PIN 3
+  #define DOWN_BUTTON_PIN 7
   #define UP_BUTTON_PIN 9
   #define LEFT_BUTTON_PIN 4
   #define RIGHT_BUTTON_PIN 5
@@ -40,7 +40,7 @@ namespace global{
 
 namespace kernel{
   button down(DOWN_BUTTON_PIN), up(UP_BUTTON_PIN), left(LEFT_BUTTON_PIN), right(RIGHT_BUTTON_PIN);
-  uint8_t menu_shift = 0, menu_select = 0, menu_len = 4, menu_selected_pos = 0;;
+  uint8_t menu_shift = 0, menu_select = 0, menu_len = 6, menu_selected_pos = 0;;
   
   void boot()
   {
@@ -117,8 +117,6 @@ namespace kernel{
 
 void setup()
 {
-  DDRD = 0b10000000;
-  PORTD = 0b01111111;
   display.begin();
   Serial.begin(9600);
   kernel::boot();
