@@ -106,9 +106,9 @@ namespace kernel {
   menu_item menu[] = 
   {
     {"sysinfo", apps::sysinfo},
-    {"ABOBA", apps::test}
-    {"ABOBA", apps::test}
-    {"ABOBA", apps::test}
+    {"ABOBA", apps::test},
+    {"ABOBA", apps::test},
+    {"ABOBA", apps::test},
     {"ABOBA", apps::test}
   };
   
