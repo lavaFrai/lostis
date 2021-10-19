@@ -1,3 +1,4 @@
+#include <MemoryFree.h>;
 #include <buildTime.h>
 #include <U8g2lib.h>
 #include <Wire.h>
@@ -47,7 +48,22 @@ namespace apps {
 
   byte sisinfo()
   {
-
+    button down(DOWN_BUTTON_PIN), up(UP_BUTTON_PIN), left(LEFT_BUTTON_PIN), right(RIGHT_BUTTON_PIN), ok(OK_BUTTON_PIN);
+    display.firstPage();
+    do {
+      display.setCursor(0, 10);
+      display.print(F("lostis multitool core"));
+      display.setCursor(0, 20);
+      display.print(F("build time:"));
+      display.setCursor(0, 30);
+      display.print(F(__DATE__));
+      display.print(F("  "));
+      display.print(F(__TIME__));
+    } while (display.nextPage());
+    _delay_ms(500);
+    while (!ok.click());
+    while (!digitalRead(OK_BUTTON_PIN));
+    _delay_ms(10);
     return 0;
   }
 }
@@ -55,7 +71,7 @@ namespace apps {
 namespace kernel {
   button down(DOWN_BUTTON_PIN), up(UP_BUTTON_PIN), left(LEFT_BUTTON_PIN), right(RIGHT_BUTTON_PIN), ok(OK_BUTTON_PIN);
   uint8_t menu_shift = 0, menu_select = 0, menu_len = 0, menu_selected_pos = 0;
-
+  
   void error_handler(int code)
   {
     if (code)
@@ -90,9 +106,8 @@ namespace kernel {
   menu_item menu[] = 
   {
     {"sisinfo", apps::sisinfo},
-    {"awknfd", apps::test},
-    {"qwerty", apps::test},
-    {"zxcvbn", apps::test},
+    {"ABOBA", apps::test},
+    {"ABOBA", apps::test},
     {"ABOBA", apps::test}
   };
   
@@ -118,46 +133,49 @@ namespace kernel {
 
   void run()
   {
-  menu_len = sizeof(menu) / sizeof(menu_item);
-  while (1)
-  {
-    if (down.click()) menu_select++;
-    if (up.click()) menu_select--;
-    if (ok.click()) error_handler(menu[menu_select].function()) ;
-    if (menu_select == menu_len) menu_select = 0;
-    if (menu_select == 255) menu_select = menu_len - 1;
-    if (menu_select - menu_shift == 4) menu_shift++;
-    if (menu_shift - menu_select == 1) menu_shift--;
-    if (!menu_shift && (menu_select == menu_len - 1)) menu_shift = menu_len - 4;
-    if (menu_shift == menu_len - 4 && menu_select == 0) menu_shift = 0;
-    display.firstPage();
-    do {
-      display.setFont(main_font);
-      display.setCursor(37, 7);
-      display.print(F("Main menu"));
-      display.drawHLine(0, 8, 128);
-
-      FOR_i(0, 4)
-      {
-        display.setCursor(0, 21 + 12 * i);
-        if (i + menu_shift == menu_select)
+    menu_len = sizeof(menu) / sizeof(menu_item);
+    while (1)
+    {
+      if (down.click()) menu_select++;
+      if (up.click()) menu_select--;
+      if (ok.click()) {
+        error_handler(menu[menu_select].function()) ;
+        return;
+      } 
+      if (menu_select == menu_len) menu_select = 0;
+      if (menu_select == 255) menu_select = menu_len - 1;
+      if (menu_select - menu_shift == 4) menu_shift++;
+      if (menu_shift - menu_select == 1) menu_shift--;
+      if (!menu_shift && (menu_select == menu_len - 1)) menu_shift = menu_len - 4;
+      if (menu_shift == menu_len - 4 && menu_select == 0) menu_shift = 0;
+      display.firstPage();
+      do {
+        display.setFont(main_font);
+        display.setCursor(37, 7);
+        display.print(F("Main menu"));
+        display.drawHLine(0, 8, 128);
+  
+        FOR_i(0, 4)
         {
-          display.print(F(" > "));
-          display.print(menu[menu_shift + i].name);
-          display.setCursor(109, 21 + 12 * i);
-          display.print(F(" < "));
+          display.setCursor(0, 21 + 12 * i);
+          if (i + menu_shift == menu_select)
+          {
+            display.print(F(" > "));
+            display.print(menu[menu_shift + i].name);
+            display.setCursor(109, 21 + 12 * i);
+            display.print(F(" < "));
+          }
+          else
+          {
+            display.print(F("   "));
+            display.print(menu[menu_shift + i].name);
+            display.setCursor(109, 21 + 12 * i);
+            display.print(F("   "));
+          }
         }
-        else
-        {
-          display.print(F("   "));
-          display.print(menu[menu_shift + i].name);
-          display.setCursor(109, 21 + 12 * i);
-          display.print(F("   "));
-        }
-      }
-    } while (display.nextPage());
-  }
-  return;
+      } while (display.nextPage());
+    }
+    return;
   }
 } using namespace kernel;
 
