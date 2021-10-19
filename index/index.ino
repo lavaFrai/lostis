@@ -105,16 +105,10 @@ namespace kernel {
 
   menu_item menu[] = 
   {
-<<<<<<< HEAD
-    {"sisinfo", apps::sisinfo},
-    {"ABOBA", apps::test},
-    {"ABOBA", apps::test},
-=======
     {"sysinfo", apps::sysinfo},
-    {"awknfd", apps::test},
-    {"qwerty", apps::test},
-    {"zxcvbn", apps::test},
->>>>>>> 481d19ebd3ee25f0a8ce0583b963a0f289879cad
+    {"ABOBA", apps::test}
+    {"ABOBA", apps::test}
+    {"ABOBA", apps::test}
     {"ABOBA", apps::test}
   };
   
