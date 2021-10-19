@@ -45,7 +45,7 @@ namespace apps {
     return 1;
   }
 
-  byte sisinfo()
+  byte sysinfo()
   {
 
     return 0;
@@ -89,7 +89,7 @@ namespace kernel {
 
   menu_item menu[] = 
   {
-    {"sisinfo", apps::sisinfo},
+    {"sysinfo", apps::sysinfo},
     {"awknfd", apps::test},
     {"qwerty", apps::test},
     {"zxcvbn", apps::test},
