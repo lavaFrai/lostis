@@ -1,10 +1,13 @@
-#include <MemoryFree.h>;
 #include <buildTime.h>
 #include <U8g2lib.h>
 #include <Wire.h>
+#include <avr/boot.h>
 #include "inc/button.h"
 #include "languages/language_pack.cpp"
+#include <avr/sleep.h>
+#include <avr/power.h>
 
+#define VERSION "v0.4.0"
 
 namespace defines {
 #define forever while(1)
@@ -50,22 +53,61 @@ byte test()
 byte sysinfo()
 {
   button down(DOWN_BUTTON_PIN), up(UP_BUTTON_PIN), left(LEFT_BUTTON_PIN), right(RIGHT_BUTTON_PIN), ok(OK_BUTTON_PIN);
-  display.firstPage();
-  do {
-    display.setCursor(0, 10);
-    display.print(F("lostis multitool core"));
-    display.setCursor(0, 20);
-    display.print(F("build time:"));
-    display.setCursor(0, 30);
-    display.print(F(__DATE__));
-    display.print(F("  "));
-    display.print(F(__TIME__));
-  } while (display.nextPage());
+  
   _delay_ms(500);
-  while (!ok.click());
+  while (!ok.click())
+  {
+    display.firstPage();
+    do {
+      display.setCursor(0, 10);
+      display.print(F("lostis OS "));
+      display.print(F(VERSION));
+      display.setCursor(0, 20);
+      display.print(F("build time:"));
+      display.setCursor(0, 30);
+      display.print(F(__DATE__));
+      display.print(F("  "));
+      display.print(F(__TIME__));
+      display.setCursor(0, 40);
+      display.print(F("Startup time: "));
+      display.print((millis() / 1000) / 60);
+      display.print(F("m "));
+      display.print((millis() / 1000) % 60);
+      display.print(F("s"));
+      display.setCursor(0, 50);
+      display.print(F("CPU UID (hex view): "));
+      display.setCursor(0, 60);
+      for (uint8_t i = 14; i < 24; i += 1) {
+          display.print(String(boot_signature_byte_get(i), HEX));
+      }
+    } while (display.nextPage());
+    
+  }
   while (!digitalRead(OK_BUTTON_PIN));
   _delay_ms(10);
   return 0;
+}
+
+byte parser()
+{
+  
+  return 0;
+}
+
+byte sensors()
+{
+  
+  return 0;
+}
+
+byte shutdown()
+{
+  display.setPowerSave(1);
+  Serial.end();
+  set_sleep_mode(SLEEP_MODE_PWR_DOWN);
+  sleep_mode();
+  Serial.begin(9600);
+  display.setPowerSave(0);
 }
 }
 
@@ -106,10 +148,10 @@ struct menu_item
 
 menu_item menu[] =
 {
+  {"External apps", apps::parser},
+  {"sensors", apps::sensors},
   {"sysinfo", apps::sysinfo},
-  {"ABOBA", apps::test},
-  {"ABOBA", apps::test},
-  {"ABOBA", apps::test}
+  {"shutdown", apps::shutdown}
 };
 
 void boot()
@@ -180,12 +222,19 @@ void run()
 }
 } using namespace kernel;
 
+int freeRam () {
+  extern int __heap_start, *__brkval; 
+  int v; 
+  return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval); 
+}
 
 
 void setup()
 {
+
   display.begin();
   Serial.begin(9600);
+  Serial.println(freeRam());
   kernel::boot();
 }
 
