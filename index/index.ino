@@ -1,4 +1,5 @@
 #include <buildTime.h>
+#include <directADC.h>
 #include <U8g2lib.h>
 #include <Wire.h>
 #include <avr/boot.h>
@@ -44,6 +45,12 @@ U8G2_SSD1306_128X64_NONAME_1_HW_I2C display(U8G2_R0);
 //U8G2_SH1106_128X64_NONAME_1_4W_HW_SPI display(U8G2_R0, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8);
 } using namespace global;
 
+int freeRam () {
+  extern int __heap_start, *__brkval; 
+  int v; 
+  return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval); 
+}
+
 namespace apps {
 byte test()
 {
@@ -52,10 +59,10 @@ byte test()
 
 byte sysinfo()
 {
-  button down(DOWN_BUTTON_PIN), up(UP_BUTTON_PIN), left(LEFT_BUTTON_PIN), right(RIGHT_BUTTON_PIN), ok(OK_BUTTON_PIN);
+  button down(DOWN_BUTTON_PIN), up(UP_BUTTON_PIN), left(LEFT_BUTTON_PIN), right(RIGHT_BUTTON_PIN), ok(OK_BUTTON_PIN), back(BACK_BUTTON_PIN);
   
-  _delay_ms(500);
-  while (!ok.click())
+  _delay_ms(200);
+  while (!ok.click() && !back.click())
   {
     display.firstPage();
     do {
@@ -63,11 +70,15 @@ byte sysinfo()
       display.print(F("lostis OS "));
       display.print(F(VERSION));
       display.setCursor(0, 20);
-      display.print(F("build time:"));
-      display.setCursor(0, 30);
       display.print(F(__DATE__));
       display.print(F("  "));
       display.print(F(__TIME__));
+      display.setCursor(0, 30);
+      display.print(F("RAM alloc: "));
+      display.print(freeRam());
+      display.print(F("b("));
+      display.print((int)((float)freeRam()*100/2048.0));
+      display.print(F("%)"));
       display.setCursor(0, 40);
       display.print(F("Startup time: "));
       display.print((millis() / 1000) / 60);
@@ -94,8 +105,20 @@ byte parser()
   return 0;
 }
 
-byte sensors()
+byte config()
 {
+  button down(DOWN_BUTTON_PIN), up(UP_BUTTON_PIN), left(LEFT_BUTTON_PIN), right(RIGHT_BUTTON_PIN), ok(OK_BUTTON_PIN), back(BACK_BUTTON_PIN);
+  
+  _delay_ms(200);
+  while (!ok.click())
+  {
+    display.firstPage();
+    do {
+      
+    } while (display.nextPage());
+  }
+  while (!digitalRead(OK_BUTTON_PIN));
+  _delay_ms(10);
   
   return 0;
 }
@@ -148,10 +171,10 @@ struct menu_item
 
 menu_item menu[] =
 {
-  {"External apps", apps::parser},
-  {"sensors", apps::sensors},
-  {"sysinfo", apps::sysinfo},
-  {"shutdown", apps::shutdown}
+  {"Apps (not ready)", apps::parser},
+  {"Configuration", apps::config},
+  {"Sysinfo", apps::sysinfo},
+  {"Shutdown", apps::shutdown}
 };
 
 void boot()
@@ -221,12 +244,6 @@ void run()
   return;
 }
 } using namespace kernel;
-
-int freeRam () {
-  extern int __heap_start, *__brkval; 
-  int v; 
-  return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval); 
-}
 
 
 void setup()
