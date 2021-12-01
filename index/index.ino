@@ -7,8 +7,9 @@
 #include "languages/language_pack.cpp"
 #include <avr/sleep.h>
 #include <avr/power.h>
+#include <EEPROM.h>
 
-#define VERSION "v0.4.1"
+#define VERSION "v0.5.0"
 
 namespace defines {
 #define forever while(1)
@@ -51,6 +52,11 @@ int freeRam () {
   return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval); 
 }
 
+void applySettings()
+{
+  display.setContrast((uint8_t)(EEPROM.read(3) * 2.55));
+}
+
 namespace apps {
 byte test()
 {
@@ -75,9 +81,9 @@ byte sysinfo()
       display.print(F(__TIME__));
       display.setCursor(0, 30);
       display.print(F("RAM alloc: "));
-      display.print(freeRam());
+      display.print((2048-freeRam()));
       display.print(F("b("));
-      display.print((int)((float)freeRam()*100/2048.0));
+      display.print((int)((float)(2048-freeRam())*100/2048.0));
       display.print(F("%)"));
       display.setCursor(0, 40);
       display.print(F("Startup time: "));
@@ -105,16 +111,129 @@ byte parser()
   return 0;
 }
 
+enum {BYTE_VALUE, PERCENTAGE_TYPE, BOOL_VALUE, QPERCENTAGE_TYPE};
+
+const struct setting{const char* name; int EEptr; uint8_t type;} settings[] = {
+  {"Contrast ", 3, PERCENTAGE_TYPE},
+  {"testConf1", 0, BOOL_VALUE},
+  {"testConf2", 3, BOOL_VALUE},
+  {"testConf3", 1, BOOL_VALUE},
+  {"testConf4", 4, BOOL_VALUE},
+  {"testConf5", 5, BOOL_VALUE}
+};
+
 byte config()
 {
   button down(DOWN_BUTTON_PIN), up(UP_BUTTON_PIN), left(LEFT_BUTTON_PIN), right(RIGHT_BUTTON_PIN), ok(OK_BUTTON_PIN), back(BACK_BUTTON_PIN);
+  uint8_t menu_shift = 0, menu_select = 0, menu_len = sizeof(settings) / sizeof(setting), menu_selected_pos = 0;
   
   _delay_ms(200);
-  while (!ok.click())
+  while (!ok.click() && !back.click())
   {
+    if (down.click()) menu_select++;
+    if (up.click()) menu_select--;
+    if (ok.click()) {
+      return 0x12;
+    }
+    if (menu_select == menu_len) menu_select = 0;
+    if (menu_select == 255) menu_select = menu_len - 1;
+    if (menu_select - menu_shift == 4) menu_shift++;
+    if (menu_shift - menu_select == 1) menu_shift--;
+    if (!menu_shift && (menu_select == menu_len - 1)) menu_shift = menu_len - 4;
+    if (menu_shift == menu_len - 4 && menu_select == 0) menu_shift = 0;
     display.firstPage();
     do {
+      display.setFont(main_font);
+      display.setCursor(24, 7);
+      display.print(F("Configuration"));
+      display.drawHLine(0, 8, 128);
       
+      FOR_i(0, 4)
+      {
+        display.setCursor(0, 21 + 12 * i);
+        if (i + menu_shift == menu_select)
+        {
+          display.print(F(" > "));
+        }
+        else
+        {
+          display.print(F("   "));
+        }
+        display.print(settings[i+menu_shift].name);
+        // Рисуем значение
+        switch (settings[i+menu_shift].type)
+        {
+          case (PERCENTAGE_TYPE):
+            if (EEPROM.read(settings[i+menu_shift].EEptr) < 100 && EEPROM.read(settings[i+menu_shift].EEptr) > 9)
+              display.setCursor(96, 21 + 12 * i);
+            else if (EEPROM.read(settings[i+menu_shift].EEptr) < 10)
+              display.setCursor(102, 21 + 12 * i);
+            else
+              display.setCursor(90, 21 + 12 * i);
+            display.print(EEPROM.read(settings[i+menu_shift].EEptr));
+            display.print(F("%"));
+            break;
+          case (QPERCENTAGE_TYPE):
+            if (EEPROM.read(settings[i+menu_shift].EEptr) < 100 && EEPROM.read(settings[i+menu_shift].EEptr) > 9)
+              display.setCursor(96, 21 + 12 * i);
+            else if (EEPROM.read(settings[i+menu_shift].EEptr) < 10)
+              display.setCursor(102, 21 + 12 * i);
+            else
+              display.setCursor(90, 21 + 12 * i);
+            display.print(EEPROM.read(settings[i+menu_shift].EEptr));
+            display.print(F("%"));
+            break;
+          case (BYTE_VALUE):
+            if (EEPROM.read(settings[i+menu_shift].EEptr) < 100 && EEPROM.read(settings[i+menu_shift].EEptr) > 9)
+              display.setCursor(102, 21 + 12 * i);
+            else if (EEPROM.read(settings[i+menu_shift].EEptr) < 10)
+              display.setCursor(108, 21 + 12 * i);
+            else
+              display.setCursor(96, 21 + 12 * i);
+            display.print(EEPROM.read(settings[i+menu_shift].EEptr));
+            break;
+          case (BOOL_VALUE):
+            if (EEPROM.read(settings[i+menu_shift].EEptr))
+              display.drawBox(106, 14 + 12 * i, 7, 7);
+            else
+              display.drawFrame(106, 14 + 12 * i, 7, 7);
+            break;
+        }
+        applySettings();
+        display.setCursor(109, 21 + 12 * i);
+        if (i + menu_shift == menu_select)
+        {
+          display.print(F(" < "));
+        }
+        else
+        {
+          display.print(F("   "));
+        }
+      }
+
+      switch (settings[menu_select].type)
+        {
+          case (PERCENTAGE_TYPE):
+            if (left.click()) EEPROM.write(settings[menu_select].EEptr, EEPROM.read(settings[menu_select].EEptr) - 1);
+            if (right.click()) EEPROM.write(settings[menu_select].EEptr, EEPROM.read(settings[menu_select].EEptr) + 1);
+            if (EEPROM.read(settings[menu_select].EEptr) == 255) EEPROM.write(settings[menu_select].EEptr, 100);
+            if (EEPROM.read(settings[menu_select].EEptr) > 100) EEPROM.write(settings[menu_select].EEptr, 0);
+            break;
+          case (QPERCENTAGE_TYPE):
+            if (left.click()) EEPROM.write(settings[menu_select].EEptr, EEPROM.read(settings[menu_select].EEptr) - 10);
+            if (right.click()) EEPROM.write(settings[menu_select].EEptr, EEPROM.read(settings[menu_select].EEptr) + 10);
+            if (EEPROM.read(settings[menu_select].EEptr) > 200) EEPROM.write(settings[menu_select].EEptr, 100);
+            if (EEPROM.read(settings[menu_select].EEptr) > 100) EEPROM.write(settings[menu_select].EEptr, 0);
+            break;
+          case (BYTE_VALUE):
+            if (left.click()) EEPROM.write(settings[menu_select].EEptr, EEPROM.read(settings[menu_select].EEptr) - 1);
+            if (right.click()) EEPROM.write(settings[menu_select].EEptr, EEPROM.read(settings[menu_select].EEptr) + 1);
+            break;
+          case (BOOL_VALUE):
+            if (left.click()) EEPROM.write(settings[menu_select].EEptr, !EEPROM.read(settings[menu_select].EEptr));
+            if (right.click()) EEPROM.write(settings[menu_select].EEptr, !EEPROM.read(settings[menu_select].EEptr));
+            break;
+        }
     } while (display.nextPage());
   }
   while (!digitalRead(OK_BUTTON_PIN));
@@ -133,6 +252,7 @@ byte shutdown()
   display.setPowerSave(0);
 }
 }
+
 
 namespace kernel {
 button down(DOWN_BUTTON_PIN), up(UP_BUTTON_PIN), left(LEFT_BUTTON_PIN), right(RIGHT_BUTTON_PIN), ok(OK_BUTTON_PIN);
@@ -251,8 +371,8 @@ void setup()
 
   display.begin();
   Serial.begin(9600);
-  Serial.println(freeRam());
   kernel::boot();
+  applySettings();
 }
 
 void loop()
