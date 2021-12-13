@@ -114,12 +114,11 @@ byte parser()
 enum {BYTE_VALUE, PERCENTAGE_TYPE, BOOL_VALUE, QPERCENTAGE_TYPE};
 
 const struct setting{const char* name; int EEptr; uint8_t type;} settings[] = {
-  {"Contrast ", 3, PERCENTAGE_TYPE},
-  {"testConf1", 0, BOOL_VALUE},
-  {"testConf2", 3, BOOL_VALUE},
-  {"testConf3", 1, BOOL_VALUE},
-  {"testConf4", 4, BOOL_VALUE},
-  {"testConf5", 5, BOOL_VALUE}
+  {"Contrast ", 3, QPERCENTAGE_TYPE},
+  {"test_BOOL", 4, BOOL_VALUE},
+  {"test_PERC", 5, PERCENTAGE_TYPE},
+  {"test_QPERC", 6, QPERCENTAGE_TYPE},
+  {"test_BYTE", 7, BYTE_VALUE}
 };
 
 byte config()
